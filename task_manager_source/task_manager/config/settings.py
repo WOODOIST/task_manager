@@ -72,6 +72,8 @@ TEMPLATES = [
     },
 ]
 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 WSGI_APPLICATION = 'task_manager.config.wsgi.application'
 
 REST_FRAMEWORK = {
@@ -138,6 +140,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'task_manager_main' / 'static',
+]
+print(BASE_DIR / 'task_manager_main' / 'static')
+
+STATIC_ROOT = BASE_DIR / 'static'
 
 MEDIA_ROOT = os.getenv('STORAGE_PATH') 
 

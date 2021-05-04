@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	{% load static %}
+	<meta charset="UTF-8">
+	<title>Task manager</title>
+	<script src="{% static 'task_manager_static/js/utils.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'task_manager_static/css/global.css' %}">
+	<script src="{% static 'task_manager_static/js/vue_develop.js' %}"></script>
+	<script src="{% static 'task_manager_static/js/axios.min.js' %}"></script>
+	{% if not user.is_authenticated %}
+		<script src="{% static 'task_manager_static/js/auths.js' %}" defer></script>
+		<link rel="stylesheet" href="{% static 'task_manager_static/css/unathorized.css' %}">
+	{% else %}
+		<title>authenticated</title>
+	{% endif %}
+</head>
+<body>
+	<header class="app-header">
+		<div class="header-container">
+			<img src="{% static 'task_manager_static/img/logo.svg' %}" alt="" class="app-logo">
+			<span class="app-title">TASK MANAGER</span>
+		</div>
+	</header>
+	{% if not user.is_authenticated %}
+	<main class="app-main" id="app_main">
+		<form @submit="sendAuthsRequest" action="" method="POST" id="authForm" class="auths-form">
+			{% csrf_token %}
+			<span class="auth-title">Авторизация</span>
+			<span class="authentication-input-start">Чтобы продолжить необходимо войти</span>
+			<div :class=authLoginClass>
+				<label for="login_input">Логин</label>
+				<input v-model="loginInput" autocomplete="nickname" name="" id="login_input">
+			</div>
+			<span class="help-text">[[loginHelpText]]</span>
+			<div :class=authPasswordClass>
+				<label for="password_input">Пароль</label>
+				<input v-model="passwordInput" autocomplete="none" type="password" name="" id="password_input">
+			</div>
+			<span class="help-text">[[passwordHelpText]]</span>
+			<button type="submit" :disabled=submitDisabled class="form-submition">[[SubmitStatus]]</button> 
+		</form>	
+		<div v-if="is_loading == true" class="loading-box">
+			<div class="loading-dots-block">
+				<div class="dot-bricks"></div>
+			</div>
+		</div>
+	</main>
+	{% else %}
+	<main class="app-main" id="app_main">
+	</main>
+	{% endif %}
+</body>
+</html>
