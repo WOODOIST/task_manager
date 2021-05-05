@@ -1,4 +1,8 @@
-.header-container {
+body {
+	overflow: hidden;
+}
+
+.header-container, .app-logo-title {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-around;

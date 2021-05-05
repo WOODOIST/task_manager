@@ -10,15 +10,14 @@ body {
 	line-height: 21px;
 	height: 100vh;
 	width: 100vw;
-	overflow: hidden;
+	overflow-x: hidden;
+  background: #E1EAF0;
 }
 
 .app-header {
-	height: 21vh;
-	width: 100%;
+	height: 200px;
 	width: 100%;
 	background: #4B6F87;
-
 }
 
 .header-container {
@@ -37,20 +36,6 @@ body {
 	color: #FFFFFF;
 }
 
-.app-main {
-
-}
-
-
-.loading-box {
-	position: absolute;
-	top: 0;
-	left: 0;
-	background: #0000002c;
-	height: 100vh;
-	width: 100vw;
-}
-
 .loading-dots-block {
 	position: absolute;
 	top: 50%;
@@ -63,6 +48,11 @@ body {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+  animation: fade_in .2s normal ease-in-out;
+}
+
+[v-cloak] {
+  display: none;
 }
 
 .dot-bricks {
@@ -76,6 +66,26 @@ body {
   color: #9880ff;
   box-shadow: 9991px -16px 0 0 #9880ff, 9991px 0 0 0 #9880ff, 10007px 0 0 0 #9880ff;
   animation: dotBricks 2s infinite ease;
+}
+
+.black-screen {
+  position: fixed;
+  z-index: 9999;
+	top: 0;
+	left: 0;
+	background: #0000002c;
+	height: 100vh;
+	width: 100vw;
+}
+
+.horizontal-row-flex {
+  display: flex;
+  flex-direction: row;
+}
+
+.vertical-row-flex {
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes dotBricks {
@@ -117,5 +127,13 @@ body {
   }
   100% {
     box-shadow: 9991px -16px 0 0 #9880ff, 9991px 0 0 0 #9880ff, 10007px 0 0 0 #9880ff;
+  }
+}
+
+@keyframes fade_in {
+  0% {
+    opacity: 0;
+  } 100% {
+    opacity: 1;
   }
 }

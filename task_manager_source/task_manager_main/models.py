@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.db.models.deletion import CASCADE
 from gettext import gettext as _
 from pathlib import Path
+from colorfield.fields import ColorField
 from re import findall
 import datetime
 import os
@@ -39,12 +40,13 @@ class Profile(models.Model):
 		instance.profile.save()
 
 	def __str__(self):
-		return self.first_name + ' ' + self.second_name + ' ' + self.patronymic
+		return self.second_name + ' ' + self.first_name + ' ' + self.patronymic
 
 
 class Status(models.Model):
 	name = models.CharField(max_length=80, verbose_name='название')
-
+	color = ColorField(default='#FFFFFF')
+	
 	def __str__(self):
 		return self.name
 

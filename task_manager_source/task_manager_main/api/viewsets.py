@@ -7,8 +7,12 @@ from .serializers import *
 
 class UserViewSet(viewsets.ModelViewSet):
 	serializer_class = UserSerializer
-	queryset = User.objects.all()
+	queryset = User.objects.all().order_by('id')
 
 class ProfileViewSet(viewsets.ModelViewSet):
 	serializer_class = ProfileSerializer
-	queryset = Profile.objects.all()
+	queryset = Profile.objects.all().order_by('id')
+
+class StatusViewSet(viewsets.ModelViewSet):
+	serializer_class = StatusSerializer
+	queryset = Status.objects.all().order_by('id')

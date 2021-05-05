@@ -1,3 +1,4 @@
+from django.db.models import base
 from django.urls import include, path
 from rest_framework import routers
 from .viewsets import *
@@ -5,6 +6,7 @@ from .viewsets import *
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'profile', ProfileViewSet)
+router.register(r'status', StatusViewSet, basename="statuses")
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

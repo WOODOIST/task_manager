@@ -3,11 +3,10 @@ from rest_framework import serializers
 from task_manager_main.models import *
 
 
-class StatusSerializer(serializers.ModelSerializer):
+class StatusSerializer(serializers.HyperlinkedModelSerializer):
 	class Meta:
 		model = Status
-		fields = '__all__'
-
+		fields = ["id", "name", "color"]
 
 
 class ProfileSerializer(serializers.ModelSerializer):

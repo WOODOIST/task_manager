@@ -1,5 +1,6 @@
-from django.contrib.auth import authenticate, login
-from django.http import HttpResponse
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.signals import user_logged_in
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template import loader
 from django.contrib.auth.models import User
@@ -24,5 +25,18 @@ def try_to_authenticate(request):
 				return HttpResponse(status=404)
 		except KeyError as e:
 			return HttpResponse(status=400)
-	return HttpResponse({'data':'cringe'})
+	return HttpResponse(status=403)
 # Create your views here.
+
+def get_current_user(request):
+	if request.user.is_authenticated:
+		return JsonResponse({'data':request.user.profile.__str__()})
+	else:
+		return HttpResponse(status=403)
+
+def try_to_logout(request):
+	if request.user.is_authenticated:
+		logout(request)
+		return HttpResponse(status=200)
+	else:
+		return HttpResponse(status=404)

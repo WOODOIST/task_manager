@@ -99,10 +99,12 @@ const authVueApp = new Vue({
 							authVueApp.authLoginClass = "auth-input auth-input-errored";
 							authVueApp.authPasswordClass = "auth-input auth-input-errored";
 							authVueApp.loginHelpText = "Неправильный логин или пароль";
+							break;
 						case 400:
 							authVueApp.authLoginClass = "auth-input auth-input-errored";
 							authVueApp.authPasswordClass = "auth-input auth-input-errored";
 							authVueApp.loginHelpText = "Неверный ввод данных";
+							break;
 					}
 				});
 			}
