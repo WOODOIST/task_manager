@@ -1,5 +1,21 @@
 "use strict";
 
+(function () {
+    if (!String.prototype.includes) {
+        String.prototype.includes = function(search, start) {
+            'use strict';
+            if (typeof start !== 'number') {
+                start = 0;
+            }
+            if (start + search.length > this.length) {
+                return false;
+            } else {
+                return this.indexOf(search, start) !== -1;
+            }
+        }
+    }
+})();
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -15,3 +31,14 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+function getFileExtension(filename) {
+	if(filename && typeof filename == "string") {
+		let tmpArr = filename.split(".");
+		if(tmpArr.length > 2 || tmpArr.length <= 0) {
+			return false;
+		}
+		return filename.split(".")[1];
+	}
+}
+

@@ -1,4 +1,4 @@
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_delete
@@ -7,9 +7,17 @@ from django.db.models.deletion import CASCADE
 from gettext import gettext as _
 from pathlib import Path
 from colorfield.fields import ColorField
-from re import findall
+from re import findall, sub
 import datetime
 import os
+
+
+def file_dir(instance, filename):
+		files_dir = Task.objects.select_related().filter(pk=instance.task_id)[0]
+		if files_dir:
+			return Path(os.getenv('STORAGE_PATH') + os.sep + "Task__" + str(files_dir.pk) + os.sep + filename)
+		else:
+			raise ObjectDoesNotExist
 
 
 class Profile(models.Model):
@@ -63,7 +71,7 @@ class Task(models.Model):
 	commentary = models.BooleanField(default=False, verbose_name='содержит комментарии')
 
 	def __str__(self):
-		return self.task_name + '_' + self.date_of_creation
+		return self.task_name + '_' + str(self.date_of_creation)
 
 
 class Comment(models.Model):
@@ -77,22 +85,21 @@ class Comment(models.Model):
 
 
 class File(models.Model):
-	filename = models.CharField(max_length=260, verbose_name='имя файла', help_text='имя файла не должно содержать следующих символов: @ ! . % + | > < " ? * : / \\')
-	file = models.FileField(null=True, upload_to=os.getenv('STORAGE_PATH'))
+	filename = models.CharField(max_length=260, null=False)
+	file = models.FileField(null=True, blank=True, upload_to=file_dir)
 	task = models.ForeignKey(Task, on_delete=CASCADE, null=False, blank=False)
 
 	def clean(self):
-		if len(findall(r'[@!.%+|><\"?*:\/\\]+', self.filename)) > 0:
+		if len(findall(r'[@!%+|><\"?*:\/\\]+', self.filename)) > 0:
 			raise ValidationError(
 				'Недопустимое имя файла: %(value)s',
 				code='invalid',
 				params={'value': self.filename}
 			)
-
+	
 	def save(self):
-		self.file.name = 'task_' + self.task.pk + '_file'
 		super().save()
-
+			
 	def __str__(self):
 		return self.filename
 
@@ -108,8 +115,9 @@ class TasksGraph(models.Model):
 @receiver(pre_delete, sender=File)
 def delete_file(sender, instance, **kwargs):
 	possible_file = Path(instance.file.name)
+	
 	if possible_file.is_file:
-		try:
-			possible_file.unlink()
-		except FileNotFoundError as err:
-			print(err)
+		possible_file.unlink(missing_ok=True)
+	if(possible_file.parent.is_dir()): 
+		if len([x for x in possible_file.parent.glob('**/*') if x.is_file()]) == 0:
+			possible_file.parent.rmdir()

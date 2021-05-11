@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
 	profile = ProfileSerializer(read_only=False)
 	class Meta:
 		model = User
-		fields = '__all__'
+		fields = ('id', 'username', 'profile')
 	
 
 class TaskSerializer(serializers.ModelSerializer):

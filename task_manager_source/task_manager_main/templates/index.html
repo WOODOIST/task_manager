@@ -12,7 +12,6 @@
 		<script src="{% static 'task_manager_static/js/auths.js' %}" defer></script>
 		<link rel="stylesheet" href="{% static 'task_manager_static/css/unathorized.css' %}">
 	{% else %}
-		<script src="{% static 'task_manager_static/js/main.js' %}" defer></script>
 		<link rel="stylesheet" href="{% static 'task_manager_static/css/main.css' %}">
 	{% endif %}
 </head>
@@ -34,87 +33,17 @@
 						<hr>
 					</div>
 				</div>
-				<div class="header-hotbar-part">
-					
-					<div :class="hotbar_classes.task_pool" id="task_pool" @click="select_hotbar_item" >
-						<span>Пул задач</span> 
-					</div>
-
-					<div :class="hotbar_classes.new_task" id="new_task" @click="select_hotbar_item" >
-						Создать задачу
-					</div>
-					
+				<div class="header-hotbar-part" v-if=statuses_loaded>
+					<div v-for="item in hotbar_items" :class="['hotbar-item', {'hotbar-active': current_active_item === item}]" @click="current_active_item = item" :style="{'font-size': custom_font_size}">
+						<span>[[item.name]]</span> 
+					</div>					
 				</div>
 			</div>
 		</header>
 		<main class="app-main-authenticated">
-			<form v-cloak v-if="current_active_item=='new_task'" action="post" class="new-task-creation-form">
-				<div class="task-header">
-					<span class="task-identifier">#Новая задача</span>
-					<div :style=selectStyleObject @click.self=start_option_selection id="statusSelection">[[current_option_item]]
-						<div v-if=is_popup_active class="status-option-containment">
-							<span @click.self=select_option_item class="option-item" v-for="optionItem in selection_items" :name=optionItem.color>
-								[[optionItem.name]]
-							</span>
-						</div>
-					</div>
-				</div>
-				<div class="task-title">
-					<input type="text" class="task-title-input" placeholder="Название задачи" v-model=new_task.title>
-					<div @click="new_task.title=null" v-if=is_even_clearing_enabled class="clear-current-field clear-title-field" title="Очистить поле без подтверждения">
-						<img src="{% static 'task_manager_static/img/clear_field_icon.svg' %}" alt="">
-					</div>
-				</div>
-				<span class="task-description-title title-section-text">Описание</span>
-				<div class="task-description">
-					<textarea class="task-description-area" name="" id="" cols="30" rows="10" v-model=new_task.description></textarea>
-					<div @click="new_task.description=null" v-if=is_even_clearing_enabled class="clear-current-field clear-title-field" title="Очистить поле без подтверждения">
-						<img src="{% static 'task_manager_static/img/clear_field_icon.svg' %}" alt="">
-					</div>
-				</div>
-				<img src="{% static 'task_manager_static/img/even_clear_enabled.svg' %}" class="clear-even-button" @click=toggle_even_clearing alt="">
-				<div class="clear-form-container" @click.self=pre_clearFormData>
-					Очистить поля формы
-					<div @click.self=clearFormData :class=clear_confirm_class>
-						Подтвердить?
-					</div>
-				</div>
-				<div class="horizontal-row-flex">
-					<div class="vertical-row-flex vert_row1">
-						<span class="task-active-assignation title-section-text">Текущие лица</span>
-						<div class="task-active-assignation-container">
-							<div class="task-assignation-box">
-								<span class="assignee-side">Автор</span>
-								<span class="assignee-name">[[user_profile]]</span>
-							</div>
-							<img class="task-assign-to-arrow" src="{% static 'task_manager_static/img/arrow_right.svg' %}" alt="">
-							<div class="task-assignation-box assignee-choosing">
-								<span class="assignee-side">Исполнитель</span>
-								<span class="assignee-name" @click=startAssigneeChoose>[[choosen_assignee]]</span>
-							</div>
-						</div>
-						
-					</div>
-					<div class="vertical-row-flex vert_row2">
-						<span class="task-active-assignation title-section-text">Выбор дат</span>
-						<div class="task-assignation-box dates-choosing">
-							<div class="date-input-item">
-								<label for="dateStartInp">Начать c:</label>
-								<input type="date" :max=new_task.date_begin.date v-model=new_task.date_begin.date id="dateStartInp">
-								<input type="time" :max=new_task.date_begin.time v-model=new_task.date_begin.time id="dateStartInp">
-							</div>
-							<div class="date-input-item">
-								<label for="dateEndInp">Закончить в:</label>
-								<input type="date" :min=new_task.date_begin.date v-model=new_task.date_end.date id="dateEndInp">
-								<input type="time" :min=new_task.date_begin.time v-model=new_task.date_end.time id="dateEndInp">
-							</div>
-							<div @click=clear_date v-if=is_even_clearing_enabled class="clear-current-field clear-title-field" title="Очистить поле без подтверждения">
-								<img src="{% static 'task_manager_static/img/clear_field_icon.svg' %}" alt="">
-							</div>
-						</div>
-					</div>
-				</div>
-			</form>
+			<keep-alive>
+				<div v-cloak v-bind=active_component></div>
+			</keep-alive>
 		</main>
 
 		<!-- utilities -->
@@ -135,21 +64,9 @@
 				</div>
 			</div>
 		</div>
-		<div v-cloak v-if=is_assignee_choosing_modal_active class="black-screen">
-			<div class="assignee-selection-modal">
-				<span class="assignee-selection-modal-title">Список достпуных исполнителей</span>
-				<div class="assignee-list">
-					<div @click=chooseAssignee class="assignee-list-item" :user_id=profile.id v-for="profile in user_profiles">
-						[[profile.second_name]] [[profile.first_name]] [[profile.patronymic]]
-					</div>
-				</div>
-				<div class="exit-assignee" @click="is_assignee_choosing_modal_active=false">
-					<span class="ex_1"></span>
-					<span class="ex_2"></span>
-				</div>
-			</div>
-		</div>
 	</div>
+	<script src="{% static 'task_manager_static/js/main.js' %}"></script>
+	<script src="{% static 'task_manager_static/js/components.js' %}"></script>
 	{% elif not user.is_authenticated %}
 	<!-- header -->
 	<header class="app-header">
@@ -178,7 +95,7 @@
 			<span class="help-text">[[passwordHelpText]]</span>
 			<button type="submit" :disabled=submitDisabled class="form-submition">[[SubmitStatus]]</button> 
 		</form>	
-		<div v-if="is_loading == true" class="loading-box">
+		<div v-if="is_loading == true" class="black-screen">
 			<div class="loading-dots-block">
 				<div class="dot-bricks"></div>
 			</div>

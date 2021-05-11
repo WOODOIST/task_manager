@@ -145,13 +145,11 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'task_manager_main' / 'static',
 ]
-print(BASE_DIR / 'task_manager_main' / 'static')
 
 STATIC_ROOT = BASE_DIR / 'static'
 
 MEDIA_ROOT = os.getenv('STORAGE_PATH') 
 
-ENCODING = 'utf-8'
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 

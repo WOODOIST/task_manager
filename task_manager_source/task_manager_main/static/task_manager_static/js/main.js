@@ -1,35 +1,10 @@
 "use strict";
 
-const hotbarItems = document.querySelector(".header-hotbar-part").children;
-const selectionBox = document.querySelector("#statusSelection");
-
-
-async function createSelection() {
-	axios.get("api/status/?format=json").then(function (response) {
-		for(let i = 0; i < response.data.results.length; i++) {
-			let newOption = document.createElement("option");
-			selectionBox.append(newOption);
-			newOption.value = response.data.results[i].name;
-			newOption.textContent = response.data.results[i].name;
-			
-			let newOptionObject = {};
-			newOptionObject.name = response.data.results[i].name;
-			newOptionObject.color = response.data.results[i].color;
-
-			let exists = 0;
-			for(let c = 0; c < mainTaskApp.selection_items.length; c++) {
-				if(mainTaskApp.selection_items[c].name == newOptionObject.name) {
-					exists = 1;
-					break;
-				}
-			}
-			if(!exists) {
-				mainTaskApp.selection_items.push(newOptionObject);
-			}
-		}
-	}).catch(function (err) {
-		console.error(err);
-	});
+const fileThumbnailsSrc = {
+	"img": "static/task_manager_static/img/image_icon.svg",
+	"undefinedFile": "static/task_manager_static/img/file_icon.svg",
+	"archive": "static/task_manager_static/img/archive_icon.svg",
+	"text": "static/task_manager_static/img/text_icon.svg",
 }
 
 async function getCurrentUserProfile() {
@@ -38,6 +13,14 @@ async function getCurrentUserProfile() {
 	}).catch(function (err) {
 		console.error(err);
 	})
+}
+
+async function getStatuses() {
+	axios.get("api/status/?format=json").then(function(response) {
+		mainTaskApp.selection_items = response.data.results
+	}).catch(function (err) {
+		console.error(err);
+	}) 
 }
 
 async function getAllUsersProfiles() {
@@ -53,120 +36,119 @@ const mainTaskApp = new Vue({
 	el: "#main_app_wrapper_",
 	data: {
 		user_profile: null,
-		choosen_assignee: "Выбрать исполнителя",
 		user_profiles: [],
 
 		is_loading: false,
 		show_logout: false,
 		statuses_loaded: false,
-		is_assignee_choosing_modal_active: false,
-		is_even_clearing_enabled: false,
 
-		is_popup_active: false,
-		clear_confirm_class: "clear-form-confirm clear-hidden",
+		active_component: null,
+		current_active_item: null,
 
-		current_active_item: "",
-		current_option_item: "",
-
-		selectStyleObject: {
-			background: "",
+		current_active_tab: {
+			tab_name: "",
+			tab_component: null
 		},
 
 		selection_items: [],
 
-		hotbar_classes: {
-			task_pool: "hotbar-item",
-			new_task: "hotbar-item"
-		},
+		hotbar_items: [
+			{
+				name: "Список задач",
+				action_name: "task_pool"
+			},
+			{
+				name: "Создать задачу",
+				action_name: "task_create"
+			}
+		],
 
-		new_task: {
-			status: null,
-			title: null,
-			description: null,
-			assignee: null,
-			date_begin: {
-				date: null,
-				time: null,
-			},
-			date_end: {
-				date: null,
-				time: null,
-			},
-			commentary: null
-		},
+		tabs: []
+	},
+	mounted() {
+		this.prepare_new_task();
+	},
+	computed: {
+		custom_font_size: function() {
+			let font_size = 18 - this.hotbar_items.length * 0.5;
+			return (font_size <= 1 ? 3 : font_size) + "px";
+		}
 	},
 	watch: {
 		current_active_item: function() {
-			for(let [key, value] of Object.entries(this.hotbar_classes)) {
-				this.hotbar_classes[key] = this.current_active_item == key ? "hotbar-item hotbar-active" : "hotbar-item";
-				if(this.current_active_item == "new_task") {
-					this.prepare_new_task();
+			this.is_loading = true;
+			if(this.current_active_item.action_name == "task_create") {
+				this.hotbar_items.push(
+					{
+						name: "Новая задача",
+						tab_id: this.hotbar_items.length - 1
+					}
+				);
+				this.current_active_item = this.hotbar_items[this.hotbar_items.length - 1];
+			} else if(this.current_active_item.tab_id) {
+				let tab_exists = 0;
+				for(let i = 0; i < this.tabs.length; i++) {
+					if(this.tabs[i].tab_name == "tab_" + this.current_active_item.tab_id) {
+						tab_exists = 1;
+						break;
+					}
+				};
+
+				if(!tab_exists) {
+					let new_component = new createTaskTab("tab_" + this.current_active_item.tab_id);
+					let tab_info = {
+						tab_name: new_component.name,
+						tab_component: Vue.component(new_component.name, new_component)
+					};
+
+					this.tabs.push(tab_info);
+					this.current_active_tab = tab_info;
+				} else {
+					this.current_active_tab = mainTaskApp.tabs.filter(item => item.tab_name=="tab_" + mainTaskApp.current_active_item.tab_id)[0];
+				}
+				this.active_component = {
+					is: this.current_active_tab.tab_name,
+					user_profiles: this.user_profiles,
+					user_profile: this.user_profile,
+					selection_items: this.selection_items,
+					current_active_item: this.current_active_item	
 				}
 			}
-		},
+			this.is_loading = false;
+		}
 	},
 	methods: {
-		clear_date: function() {
-			this.new_task.date_begin = {
-				date: null,
-				time: null
-			};
-			this.new_task.date_end = {
-				date: null,
-				time: null
+		remove_file_from_list: function(indexOfItem) {
+			let deletingItemIndex = -1;
+			
+			for(let i = 0; i < this.new_task.uploaded_files.length; i++) {
+				if(this.new_task.uploaded_files[i].index == indexOfItem) {
+					deletingItemIndex = i;
+					break;
+				}
 			}
-		},
-		toggle_even_clearing: function() {
-			this.is_even_clearing_enabled = !this.is_even_clearing_enabled;
-		},
-
-		chooseAssignee: function(e) {
-			this.new_task.assignee = e.currentTarget.getAttribute("user_id");
-			this.choosen_assignee = e.currentTarget.textContent.replaceAll(/[\t\n]/g, "");
-			this.is_assignee_choosing_modal_active = false;
-		},
-
-		startAssigneeChoose: function() {
-			this.is_assignee_choosing_modal_active = true;
-		},
-
-		select_hotbar_item: function(e) {
-			this.current_active_item = e.currentTarget.id;	
-		},
-
-		pre_clearFormData: function() {
-			this.clear_confirm_class = this.clear_confirm_class == "clear-form-confirm" ? "clear-form-confirm clear-hidden" : "clear-form-confirm";
-		},
-
-		clearFormData: function() {
-			this.selectStyleObject = {
-				background: "",
-				boxShadow: "0 0 2px #000000",
-			};
-			this.current_option_item = null;
-			this.new_task.status = null;
-			this.new_task.title = null;
-			this.new_task.description = null;
-			this.new_task.assignee = null;
-			this.clear_date();
-			this.choosen_assignee = "Выбрать исполнителя";
-			this.clear_confirm_class = "clear-form-confirm clear-hidden";
-		},
-
-		start_option_selection: function(e) {
-			if(this.is_popup_active == false) {
-				this.is_popup_active = true;
-			} else {
-				this.is_popup_active = false;
+			if(deletingItemIndex > -1) {
+				this.new_task.uploaded_files.splice(deletingItemIndex, 1);
 			}
+
 		},
 
-		select_option_item: function(e) {
-			this.selectStyleObject.background = e.currentTarget.getAttribute("name");
-			this.selectStyleObject.boxShadow = "none"
-			this.new_task.status = e.currentTarget.textContent.replaceAll(/[\t\n]/g, "");
-			this.current_option_item = this.new_task.status;
-			this.is_popup_active = false;
+		upload_files: function(e) {
+			for(let outer = 0; outer < e.target.files.length; outer++) {
+				let has_item = 0;
+				for(let inner = 0; inner < this.new_task.uploaded_files; inner++) {
+					if(e.target.files[outer] == this.new_task.uploaded_files[outer]) {
+						has_item = 1;
+						break;
+					}
+				}
+				if(!has_item) this.new_task.uploaded_files.push(
+					{
+						file: e.target.files[outer],
+						index: outer,
+					}	
+				);
+			}
 		},
 		
 		confirm_logout: function() {		
@@ -190,15 +172,20 @@ const mainTaskApp = new Vue({
 		},
 
 		async prepare_new_task() {
+			this.is_loading = true;
 			if(!this.statuses_loaded) {
-				this.is_loading = true;
-				await createSelection()
-						.then(getCurrentUserProfile())
+				await getCurrentUserProfile()
+						.then(getStatuses())
 						.then(getAllUsersProfiles())
-						.then(this.is_loading = false)
+						.finally(function() {
+							mainTaskApp.statuses_loaded = true;
+							mainTaskApp.is_loading = false;
+
+						});
 				
 			}
 		}
 
 	}
 });
+

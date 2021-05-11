@@ -16,3 +16,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 class StatusViewSet(viewsets.ModelViewSet):
 	serializer_class = StatusSerializer
 	queryset = Status.objects.all().order_by('id')
+
+class TaskViewSet(viewsets.ModelViewSet):
+	serializer_class = TaskSerializer
+	queryset = Task.objects.all().order_by('id')
