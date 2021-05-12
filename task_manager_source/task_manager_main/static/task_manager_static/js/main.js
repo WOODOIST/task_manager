@@ -35,89 +35,69 @@ const mainTaskApp = new Vue({
 	delimiters: ["[[", "]]"],
 	el: "#main_app_wrapper_",
 	data: {
-		user_profile: null,
-		user_profiles: [],
+		user_profile: null, // Профиль текущего пользователя
+		user_profiles: [], // Профили всех пользователей
 
-		is_loading: false,
-		show_logout: false,
-		statuses_loaded: false,
+		is_loading: false, // блокировка экрана (экран закрузки вкл/выкл)
+		show_logout: false, // Показать модальное окно выхода из профиля
+		statuses_loaded: false, // Данные с сервера загружены
 
-		active_component: null,
-		current_active_item: null,
+		active_component: null, // Активный комнонент Vue для отображения содержимого вкладки
+		current_active_item: null, // Текущая открытая вкладка
 
-		current_active_tab: {
-			tab_name: "",
-			tab_component: null
+		selection_items: [], // Список выбора статусов работы
+
+		manager_settings: { // Настройки работы mainTaskApp и его компонентов
+			functional_hotbar_items_max: 1, // Индекс последнего функционально элемента хотбара (не являющийся задачей)
 		},
 
-		selection_items: [],
-
-		hotbar_items: [
-			{
-				name: "Список задач",
-				action_name: "task_pool"
-			},
-			{
-				name: "Создать задачу",
-				action_name: "task_create"
-			}
-		],
-
-		tabs: []
+		task_list: [
+		]	// Список вкладок
 	},
 	mounted() {
 		this.prepare_new_task();
 	},
-	computed: {
-		custom_font_size: function() {
-			let font_size = 18 - this.hotbar_items.length * 0.5;
-			return (font_size <= 1 ? 3 : font_size) + "px";
-		}
-	},
-	watch: {
-		current_active_item: function() {
+	methods: {
+		select_tab: function(index) {
 			this.is_loading = true;
-			if(this.current_active_item.action_name == "task_create") {
-				this.hotbar_items.push(
-					{
-						name: "Новая задача",
-						tab_id: this.hotbar_items.length - 1
-					}
-				);
-				this.current_active_item = this.hotbar_items[this.hotbar_items.length - 1];
-			} else if(this.current_active_item.tab_id) {
-				let tab_exists = 0;
-				for(let i = 0; i < this.tabs.length; i++) {
-					if(this.tabs[i].tab_name == "tab_" + this.current_active_item.tab_id) {
-						tab_exists = 1;
-						break;
-					}
-				};
-
-				if(!tab_exists) {
-					let new_component = new createTaskTab("tab_" + this.current_active_item.tab_id);
-					let tab_info = {
-						tab_name: new_component.name,
-						tab_component: Vue.component(new_component.name, new_component)
-					};
-
-					this.tabs.push(tab_info);
-					this.current_active_tab = tab_info;
-				} else {
-					this.current_active_tab = mainTaskApp.tabs.filter(item => item.tab_name=="tab_" + mainTaskApp.current_active_item.tab_id)[0];
-				}
-				this.active_component = {
-					is: this.current_active_tab.tab_name,
-					user_profiles: this.user_profiles,
-					user_profile: this.user_profile,
-					selection_items: this.selection_items,
-					current_active_item: this.current_active_item	
-				}
+			this.current_active_item = index;
+			if(index == 1) {
+				this.current_active_item = this.create_task_tab();
+				this.active_component = this.build_component_props();
+			} else if(index > this.manager_settings.functional_hotbar_items_max) {
+				this.active_component = this.build_component_props();
 			}
 			this.is_loading = false;
-		}
-	},
-	methods: {
+		},
+		create_task_tab: function() {
+			let new_tab_id = this.task_list.length + 2;
+			let new_component = new createTaskTab("tab_" + new_tab_id);
+
+			this.task_list.push(
+				{
+					name: "Новая задача",
+					tab_id: new_tab_id,
+					tab_component: Vue.component(new_component.name, new_component)
+				}
+			);
+
+			return new_tab_id;
+		},
+		close_tab: function(tab_item) {
+			console.log(tab_item);
+			this.task_list.splice(this.task_list.indexOf(tab_item), 1);
+			this.current_active_item = null;
+			this.active_component = null;
+		},
+		build_component_props: function() {
+			return {
+						is: "tab_" + this.current_active_item,
+						user_profiles: this.user_profiles,
+						user_profile: this.user_profile,
+						selection_items: this.selection_items,
+						current_active_item: this.current_active_item,	
+					}
+		},
 		remove_file_from_list: function(indexOfItem) {
 			let deletingItemIndex = -1;
 			

@@ -34,8 +34,15 @@
 					</div>
 				</div>
 				<div class="header-hotbar-part" v-if=statuses_loaded>
-					<div v-for="item in hotbar_items" :class="['hotbar-item', {'hotbar-active': current_active_item === item}]" @click="current_active_item = item" :style="{'font-size': custom_font_size}">
+					<div :class="['hotbar-item', {'hotbar-active': current_active_item == 0}]" @click=select_tab(0)>
+						<span>Список всех задач</span> 
+					</div>	
+					<div :class="['hotbar-item', {'hotbar-active': current_active_item === 1}]" @click=select_tab(1)>
+						<span>Создать задачу</span> 
+					</div>	
+					<div @click.middle="close_tab(item)" v-for="item in task_list" :class="['hotbar-item', 'task-hotbar-item', {'hotbar-active': current_active_item === item.tab_id}]" @click="select_tab(item.tab_id)">
 						<span>[[item.name]]</span> 
+						<img title="Закрыть" v-if="current_active_item === item.tab_id" src="static/task_manager_static/img/close_tab_button.svg" class="close-button" @click.self.stop="close_tab(item)">
 					</div>					
 				</div>
 			</div>

@@ -7,14 +7,16 @@ function createTaskTab (name) {
 			user_profile: String,
 			user_profiles: Array,
 			selection_items: Array,
-			current_active_item: Object
+			current_active_item: Number,
 		},
 		data: function() {
 			return {
 				name: this.$options.name,
 				choosen_assignee: "Выбрать исполнителя",
 
-				
+				server_response_text: "",
+				show_response_text: false,
+				response_status: null,
 
 				form_fields_validated: [
 					0, 0, 0
@@ -41,17 +43,17 @@ function createTaskTab (name) {
 				new_task: {
 					id: null,
 					status: null,
-					title: null,
-					description: null,
+					title: "",
+					description: "",
 					author: null,
 					assignee: null,
 					date_begin: {
-						date: null,
-						time: null,
+						date: "",
+						time: "",
 					},
 					date_end: {
-						date: null,
-						time: null,
+						date: "",
+						time: "",
 					},
 					uploaded_files: [
 
@@ -74,14 +76,14 @@ function createTaskTab (name) {
 				</div>
 				<div :class=task_title_class>
 					<input type="text" class="task-title-input" placeholder="Название задачи" v-model=new_task.title>
-					<div @click="new_task.title=null" v-if=is_field_deleting_enabled class="clear-current-field clear-title-field" title="Очистить поле без подтверждения">
+					<div @click="new_task.title=''" v-if=is_field_deleting_enabled class="clear-current-field clear-title-field" title="Очистить поле без подтверждения">
 						<img src="static/task_manager_static/img/clear_field_icon.svg" alt="">
 					</div>
 				</div>
 				<span class="task-description-title title-section-text">Описание</span>
 				<div class="task-description">
 					<textarea class="task-description-area" name="" id="" cols="30" rows="10" v-model=new_task.description></textarea>
-					<div @click="new_task.description=null" v-if=is_field_deleting_enabled class="clear-current-field clear-title-field" title="Очистить поле без подтверждения">
+					<div @click="new_task.description=''" v-if=is_field_deleting_enabled class="clear-current-field clear-title-field" title="Очистить поле без подтверждения">
 						<img src="static/task_manager_static/img/clear_field_icon.svg" alt="">
 					</div>
 				</div>
@@ -177,7 +179,11 @@ function createTaskTab (name) {
 						</div>
 					</div>
 				</div>
-				<div class="response-message-box" v-bind=active_subcomponent></div>
+				
+				<div v-if=show_response_text class="server-messages-box" @click=clear_message_box>
+					<img :src="[response_status<=300 ? 'static/task_manager_static/img/good_response.svg' : 'static/task_manager_static/img/bad_response.svg']" alt="">
+					<span>{{server_response_text}}</span>
+				</div>
 			</form>`,
 		watch: {
 			new_task: {
@@ -253,12 +259,12 @@ function createTaskTab (name) {
 			},
 			clear_date: function() {
 				this.new_task.date_begin = {
-					date: null,
-					time: null
+					date: "",
+					time: ""
 				};
 				this.new_task.date_end = {
-					date: null,
-					time: null
+					date: "",
+					time: ""
 				}
 			},
 			start_assignee_choose: function() {
@@ -288,7 +294,7 @@ function createTaskTab (name) {
 				};
 				this.current_status_option_item = null;
 				this.new_task.status = null;
-				this.new_task.title = null;
+				this.new_task.title = "";
 				this.new_task.description = null;
 				this.new_task.assignee = null;
 				this.clear_date();
@@ -318,6 +324,11 @@ function createTaskTab (name) {
 				this.choosen_assignee = e.currentTarget.textContent.replaceAll(/[\t\n]/g, "");
 				this.is_assignee_choosing_modal_active = false;
 			},
+			clear_message_box: function() {
+				this.server_response_text = "";
+				this.response_status = null;
+				this.show_response_text = false;
+			},
 			try_to_submit: function(e) {
 				e.preventDefault();
 				let formData = new FormData();
@@ -326,7 +337,6 @@ function createTaskTab (name) {
 				}
 				formData.append('task', JSON.stringify(this.new_task));
 				let current_component = this;
-				let message_component = createServerResponseBox(this.name);
 				axios.post("new_task_post", formData, {
 					headers: {
 						"X-CSRFToken": getCookie("csrftoken"),
@@ -338,41 +348,17 @@ function createTaskTab (name) {
 							current_component.task_id_display = response.data.task_created_id;
 							current_component.new_task.id = response.data.task_created_id;
 						}
-						current_component.active_subcomponent = {
-							is: current_component.name,
-							server_response_text: response.data.message,
-							is_good: true	
+ 					}
+					current_component.server_response_text = response.data.message;
+					current_component.response_status = response.status;
+					current_component.show_response_text = true;
+					setTimeout(function() {
+						if(current_component.show_response_text == true) {
+							current_component.clear_message_box();
 						}
- 					} else {
-						 current_component.active_subcomponent = {
-							is: current_component.name,
-							server_response_text: response.data.message,
-							is_good: false	
-						}
-					 }
+					}, 5000);
 				})
 			}
 		}
 	};
-}
-
-function createServerResponseBox(name) {
-	return {
-		name: name,
-		props: {
-			server_response_text: String,
-			is_good: Boolean
-		},
-		data: function() {
-			return {
-
-			}
-		},
-		template: `
-			<div class="server-messages-box">
-				<img :src="[is_good ? 'static/task_manager_static/img/good_response.svg' : 'static/task_manager_static/img/bad_response.svg']" alt="">
-				<span>{{server_response_text}}</span>
-			</div>
-		`
-	}
 }

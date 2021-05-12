@@ -42,3 +42,6 @@ function getFileExtension(filename) {
 	}
 }
 
+document.addEventListener("mousedown", function(e) {
+    if(e.button == 1) return e.preventDefault();
+})

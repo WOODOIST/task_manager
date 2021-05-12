@@ -70,11 +70,11 @@ def try_to_save_new_task(request):
 			try:
 				new_date_start = request_task_data['date_begin']
 				new_date_end = request_task_data['date_end']
-				if(new_date_start['date'] is None or new_date_start['time'] is None):
+				if(new_date_start['date'] == '' or new_date_start['time'] == ''):
 					new_task_date_start = datetime.now()
 				else:
-					new_task_date_start = datetime.strptime(new_date_start['date'] + " " + new_date_start['time'], '%Y-%m-%d %H:%M') 
-				new_task_date_end = datetime.strptime(new_date_end['date'] + " " + new_date_end['time'], '%Y-%m-%d %H:%M') 
+					new_task_date_start = datetime.strptime(new_date_start['date'] + ' ' + new_date_start['time'], '%Y-%m-%d %H:%M') 
+				new_task_date_end = datetime.strptime(new_date_end['date'] + ' ' + new_date_end['time'], '%Y-%m-%d %H:%M') 
 			except ValueError as err:
 				return HttpResponse(status = 422, content=json.dumps({'message': 'Был получен неверный формат даты'}))
 
@@ -140,7 +140,7 @@ def try_to_save_new_task(request):
 			except Exception as err:
 				return HttpResponse(status = 500, content={'message': err})
 
-			return HttpResponse(status = 200, content=json.dumps({'task_created_id': task_object.id, 'message': 'Запись успешно создана'}))
+			return HttpResponse(status = 200, content=json.dumps({'task_created_id': task_object.id, 'message': 'Запись успешно сохранена'}))
 			
 	else: 
 		return HttpResponse(status = 403, content=json.dumps({'message': 'Для сохранения записи необходимо авторизоваться'}))
