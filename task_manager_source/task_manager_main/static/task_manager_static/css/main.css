@@ -84,7 +84,22 @@
 	cursor: pointer;
 }
 
+.hotbar-item {
+	flex-shrink: 0;
+}
+
+.hotbar-item.task-hotbar-item {
+	flex-shrink: 1;
+	text-overflow: ellipsis;
+}
+
 .hotbar-item.task-hotbar-item span {
+	display: inline-block;
+	height: 100%;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	text-overflow: ellipsis;
 	flex-shrink: 1;
 }
@@ -414,6 +429,7 @@
 	background: #FFFFFF;
 	box-shadow: inset 0 0 1px #000000;
 	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .file-item {

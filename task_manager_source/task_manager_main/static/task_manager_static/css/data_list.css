@@ -1,0 +1,131 @@
+.tasks-list-container {
+	width: 95%;
+	font-size: 10px;
+}
+
+.tasks-filter-header {
+	height: 25px;
+	width: 100%;	
+	display: flex;
+	align-items: flex-end;
+}
+
+.task-filter-item-container {
+	width: 195px;
+	height: 9px;
+	background: #4B6F87;
+	transition: height .1s ease-in-out;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	overflow: hidden;
+	margin-right: 2px;
+	flex-shrink: 0;
+}
+
+.task-filter-item-container:last-of-type {
+	width: 99px;
+}
+
+.task-filter-item-container.active, .task-filter-item-container:hover {
+	height: 100%;
+}
+
+.task-filter-item-container.active img, .task-filter-item-container:hover img {
+	opacity: 1;
+}
+
+.task-filter-item-container img {
+	opacity: 0;
+}
+
+.task-filter-item-container.active .filter-input, .task-filter-item-container:hover .filter-input{
+	opacity: 1;
+}
+
+.filter-input {
+	height: 17px;
+	width: 75%;
+	background: #ffffff;
+	box-shadow: inset 0px 0px 2px #00000040;
+	display: flex;
+	padding: 2px;
+	justify-content: space-between;
+	align-items: center;
+	overflow: hidden;
+	opacity: 0;
+}
+
+.filter-input input {
+	width: 130px;
+	height: 100%;
+	outline: none;
+	border: none;
+}
+
+.tasks-list-table {
+	width: 100%;
+}
+
+.tasks-list-table-headers {
+	color: #ffffff;
+	font-size: 16px;
+	width: 100%;
+	height: 27px;
+	display: flex;
+}
+
+.tasks-list-table-headers span {
+	display: flex;
+	margin-right: 2px;
+	flex-shrink: 0;
+	justify-content: center;
+	align-items: center;
+	width: 195px;
+	background: #5C7C92;
+	font-weight: bold;
+}
+
+.tasks-list-table-headers span:last-of-type {
+	width: 99px;
+}
+
+.tasks-list-data {
+	width: 100%;
+	height: 50vh;
+	background: #E8E8E8;
+	overflow-y: scroll;
+}
+
+.task-list-entry {
+	width: 100%;
+	display: flex;
+	height: 27px;
+	font-size: 12px;
+	box-shadow: 0px 0px 3px #00000040;
+}
+
+.task-list-item {
+	width: 195px;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-right: 2px;
+	flex-shrink: 0;
+}
+
+.task-list-item-link {
+	text-decoration: underline;
+	cursor: pointer;
+	color: #5C7C92;
+}
+
+.task-list-item-link:hover {
+	background: #5C7C92;
+	color: #ffffff;
+}
+
+.task-list-item:last-of-type {
+	width: 99px;
+}

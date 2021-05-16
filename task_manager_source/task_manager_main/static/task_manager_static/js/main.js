@@ -51,17 +51,33 @@ const mainTaskApp = new Vue({
 			functional_hotbar_items_max: 1, // Индекс последнего функционально элемента хотбара (не являющийся задачей)
 		},
 
+		tasks_list_component: {
+
+		},
+
 		task_list: [
 		]	// Список вкладок
 	},
 	mounted() {
 		this.prepare_new_task();
+		this.tasks_list_component = {
+			is: mainListTab("tab_all_shedule"),
+		};
+		this.current_active_item = 0;
+		this.active_component = this.tasks_list_component;
 	},
 	methods: {
+		open_task_tab: function(task_id) {
+			this.current_active_item = this.create_task_tab(task_id);
+			this.active_component = this.build_component_props();
+		},
 		select_tab: function(index) {
 			this.is_loading = true;
 			this.current_active_item = index;
-			if(index == 1) {
+			if(index == 0) {
+				this.active_component = this.tasks_list_component;
+			}
+			else if(index == 1) {
 				this.current_active_item = this.create_task_tab();
 				this.active_component = this.build_component_props();
 			} else if(index > this.manager_settings.functional_hotbar_items_max) {
@@ -69,13 +85,18 @@ const mainTaskApp = new Vue({
 			}
 			this.is_loading = false;
 		},
-		create_task_tab: function() {
+		create_task_tab: function(open_task_id) {
 			let new_tab_id = this.task_list.length + 2;
-			let new_component = new createTaskTab("tab_" + new_tab_id);
+			let new_component;
+			if(open_task_id) {
+				new_component = new createTaskTab("tab_" + new_tab_id, open_task_id);
+			} else {
+				new_component = new createTaskTab("tab_" + new_tab_id);
+			}
 
 			this.task_list.push(
 				{
-					name: "Новая задача",
+					name: open_task_id ? "Задача #" + open_task_id : "Новая задача",
 					tab_id: new_tab_id,
 					tab_component: Vue.component(new_component.name, new_component)
 				}
@@ -84,50 +105,17 @@ const mainTaskApp = new Vue({
 			return new_tab_id;
 		},
 		close_tab: function(tab_item) {
-			console.log(tab_item);
 			this.task_list.splice(this.task_list.indexOf(tab_item), 1);
 			this.current_active_item = null;
 			this.active_component = null;
 		},
 		build_component_props: function() {
 			return {
-						is: "tab_" + this.current_active_item,
-						user_profiles: this.user_profiles,
-						user_profile: this.user_profile,
-						selection_items: this.selection_items,
-						current_active_item: this.current_active_item,	
-					}
-		},
-		remove_file_from_list: function(indexOfItem) {
-			let deletingItemIndex = -1;
-			
-			for(let i = 0; i < this.new_task.uploaded_files.length; i++) {
-				if(this.new_task.uploaded_files[i].index == indexOfItem) {
-					deletingItemIndex = i;
-					break;
-				}
-			}
-			if(deletingItemIndex > -1) {
-				this.new_task.uploaded_files.splice(deletingItemIndex, 1);
-			}
-
-		},
-
-		upload_files: function(e) {
-			for(let outer = 0; outer < e.target.files.length; outer++) {
-				let has_item = 0;
-				for(let inner = 0; inner < this.new_task.uploaded_files; inner++) {
-					if(e.target.files[outer] == this.new_task.uploaded_files[outer]) {
-						has_item = 1;
-						break;
-					}
-				}
-				if(!has_item) this.new_task.uploaded_files.push(
-					{
-						file: e.target.files[outer],
-						index: outer,
-					}	
-				);
+				is: "tab_" + this.current_active_item,
+				user_profiles: this.user_profiles,
+				user_profile: this.user_profile,
+				selection_items: this.selection_items,
+				current_active_item: this.current_active_item
 			}
 		},
 		

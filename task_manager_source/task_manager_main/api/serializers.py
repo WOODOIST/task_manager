@@ -3,10 +3,10 @@ from rest_framework import serializers
 from task_manager_main.models import *
 
 
-class StatusSerializer(serializers.HyperlinkedModelSerializer):
+class StatusSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Status
-		fields = ["id", "name", "color"]
+		fields = ("id", "name", "color")
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -45,7 +45,7 @@ class FileSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = File
-		fields = '__all__'
+		fields = ('id', 'task', 'filename')
 
 class TasksGraphSerializer(serializers.ModelSerializer):
 	task = TaskSerializer(read_only=False)

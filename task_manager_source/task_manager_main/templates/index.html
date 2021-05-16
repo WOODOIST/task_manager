@@ -13,6 +13,7 @@
 		<link rel="stylesheet" href="{% static 'task_manager_static/css/unathorized.css' %}">
 	{% else %}
 		<link rel="stylesheet" href="{% static 'task_manager_static/css/main.css' %}">
+		<link rel="stylesheet" href="{% static 'task_manager_static/css/data_list.css' %}">
 	{% endif %}
 </head>
 <body>
@@ -49,7 +50,7 @@
 		</header>
 		<main class="app-main-authenticated">
 			<keep-alive>
-				<div v-cloak v-bind=active_component></div>
+				<div v-cloak v-on:open_task_data="open_task_tab" v-bind=active_component></div>
 			</keep-alive>
 		</main>
 
@@ -72,8 +73,8 @@
 			</div>
 		</div>
 	</div>
-	<script src="{% static 'task_manager_static/js/main.js' %}"></script>
 	<script src="{% static 'task_manager_static/js/components.js' %}"></script>
+	<script src="{% static 'task_manager_static/js/main.js' %}"></script>
 	{% elif not user.is_authenticated %}
 	<!-- header -->
 	<header class="app-header">

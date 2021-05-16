@@ -68,6 +68,16 @@ body {
   animation: dotBricks 2s infinite ease;
 }
 
+.form-black-screen {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 9999;
+  background: #ffffffd5;
+  height: 100%;
+  width: 100%;
+}
+
 .black-screen {
   position: fixed;
   z-index: 9999;
