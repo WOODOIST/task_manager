@@ -1,0 +1,203 @@
+.current-user-list-container {
+	width: 95%;
+	height: 100%;
+}
+
+.user-role-list-container {
+	margin: 0 auto 20px auto;
+	width: 45%;
+	height: 25px;
+	display: flex;
+}
+
+.user-role-list {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+}
+
+.role-item {
+	width: 50%;
+	height: 25px;
+	display: flex;
+	font-size: 15px;
+	justify-content: center;
+	align-items: center;
+	background: #ffffff;
+	box-shadow: 0 0 1px #000000;
+	color: #5C7C92;
+	margin-right: 25px;
+	flex-shrink: 0;
+	cursor: pointer;
+	transition: background .2s ease-in-out, color .2s ease-in-out, transform .2s ease-in-out;
+}
+
+.role-item:hover {
+	color: #ffffff;
+	background: #5C7C92;
+	box-shadow: none;
+}
+
+.role-item.role-selected {
+	transform: scale(1.1);
+	color: #ffffff;
+	background: #5C7C92;
+}
+
+.role-list-item {
+	position: relative;
+	width: 100%;
+	height: 200px;
+	background: #ffffff;
+	margin-bottom: 30px;
+	box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+	user-select: none;
+}
+
+.user-role-data-list {
+	width: 80%;
+}
+
+.role-author-list {
+	animation: slide_right .4s ease-in-out normal;
+}
+
+.role-performer-list {
+	animation: slide_left .3s ease-in-out normal;
+}
+
+/* task containment */
+.user-task-info {
+	padding: 42px 0 0 60px;
+}
+
+.user-task-id {
+	position: absolute;
+	left: 6px;
+	top: 6px;
+	display: flex;
+	color: #77A6B9;
+	font-size: 16px;
+	font-style: italic;
+}
+
+.author-to-assignee {
+	display: flex;
+	margin-bottom: 10px;
+}
+
+.author-to-assignee img {
+	margin: 0 5px;
+}
+
+.user-task-title {
+	display: flex;
+	font-size: 48px;
+	line-height: 56px;
+}
+
+.delimiter {
+	width: 85%;
+	height: 1px;
+	background: #000000;
+	opacity: 1;
+	margin: 5px 0;
+}
+
+.user-task-author {
+	display: flex;
+	font-size: 12px;
+	line-height: 14px;
+}
+
+.user-task-time-elapsed {
+	display: flex;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+/* user task actions */
+.user-task-actions {
+	position: absolute;
+	right: 10px;
+	top: 0;
+	width: 60px;
+	height: 100%;
+	background: #77A6B9;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+}
+
+.user-task-action {
+	width: 50px;
+	height: 50px;
+	border-radius: 2px;
+	box-shadow: 0 0 2px #ffffff;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	transition: background .1s ease-in-out;
+}
+
+.user-task-action img {
+	height: 90%;
+	width: 90%;
+	opacity: 0;
+	object-fit: contain;
+	transition: opacity .2s ease-in-out;
+	cursor: pointer;
+}
+
+.user-task-action:hover {
+	background: #ffffff;
+}
+
+.user-task-action:hover img {
+	opacity: 1;
+}
+
+.confirm-deletion {
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 250px;
+	height: 90px;
+	color: #ffffff;
+	padding: 10px;
+	font-weight: bold;
+	font-size: 16px;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	flex-direction: column;
+	background: #5C7C92;
+}
+
+.confirm-buttons {
+	width: 100%;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+
+.confirm-button {
+	width: 43%;
+	height: 20px;
+	outline: none;
+	border: none;
+	cursor: pointer;
+	font-weight: bold;
+	transition: background .1s ease-in-out;
+	background: #77A6B9;
+	color: #ffffff;
+}
+
+.confirm-button:hover {
+	background: transparent;
+	box-shadow: inset 0 0 1px 1px #77A6B9;
+}

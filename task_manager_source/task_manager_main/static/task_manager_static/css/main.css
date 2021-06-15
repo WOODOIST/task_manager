@@ -249,6 +249,14 @@
 	box-shadow: 0 0 2px #2e4b5f;
 }
 
+.task-option-field.task-empty::after {
+	font-size: 11px;
+	font-weight: normal;
+	border-bottom: none;
+	border-top: 1px solid #912222;
+	width: 90%;
+}
+
 .option-item {
 	width: 100%;
 	height: 25px;
@@ -285,9 +293,10 @@
 }
 .task-empty::after {
 	position: absolute;
-	content: "Поле обязательно для заполнения";
+	content: "Обязательное поле";
 	left: 50%;
 	top: 100%;
+	text-align: center;
 	color: #912222;
 	font-size: 14px;
 	transform: translateX(-50%)
@@ -412,7 +421,7 @@
 	overflow: hidden;
 }
 
-.files-input:hover label:after {
+.files-input:hover label:not([disabled]):after {
 	width: 50px;
 	height: 100%;
 	background: #4B6F87;
@@ -441,12 +450,19 @@
 	font-size: 14px;
 }
 
-.item-deletion {
+.file-actions {
 	position: absolute;
 	right: 15px;
-	opacity: .4;
 	top: 50%;
 	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	width: 55px;
+}
+
+.item-deletion, .item-download {
+	opacity: .4;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -460,13 +476,20 @@
 	cursor: pointer;
 	border: none;
 	outline: none;
+	flex-shrink: 0;
 }
 
-.item-deletion:hover {
+.item-download img {
+	object-fit: cover;
+	width: 55%;
+	height: 55%;
+}
+
+.item-deletion:hover, .item-download:hover {
 	opacity: 1;
 }
 
-.file-item img {
+.item-file-thumb {
 	margin-right: 15px;
 }
 
@@ -563,11 +586,11 @@
 
 .assignee-choosing span{
 	transition: color .2s ease-in-out;
-	cursor: pointer;
 }
 
-.assignee-choosing span:hover {
+.assignee-choosing:not([disabled]) span:hover {
 	color: #4B6F87; 
+	cursor: pointer;
 }
 
 .assignee-name {

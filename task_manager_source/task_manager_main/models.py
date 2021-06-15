@@ -7,8 +7,7 @@ from django.db.models.deletion import CASCADE
 from gettext import gettext as _
 from pathlib import Path
 from colorfield.fields import ColorField
-from re import findall, sub
-import datetime
+from re import findall
 import os
 
 
@@ -68,20 +67,10 @@ class Task(models.Model):
 	status = models.ForeignKey(Status, on_delete=CASCADE, null=True)
 	date_of_creation = models.DateTimeField(verbose_name='время создания задачи', null=True, auto_now=True)
 	date_end = models.DateTimeField(verbose_name='время завершения задачи', null=True)
-	commentary = models.BooleanField(default=False, verbose_name='содержит комментарии')
+	
 
 	def __str__(self):
 		return self.task_name + '_' + str(self.date_of_creation)
-
-
-class Comment(models.Model):
-	user = models.ForeignKey(User, on_delete=CASCADE, verbose_name='пользователь')
-	date_of_creation = models.DateTimeField(verbose_name='дата создания', auto_now=True)
-	task = models.ForeignKey(Task, on_delete=CASCADE, verbose_name='задача', null=False, blank=False)
-	comment_text = models.TextField(verbose_name='комментарий')
-
-	def __str__(self):
-		return '#' + self.pk + '_' + self.user + ' created: ' + self.date_of_creation
 
 
 class File(models.Model):
@@ -102,15 +91,6 @@ class File(models.Model):
 			
 	def __str__(self):
 		return self.filename
-
-
-class TasksGraph(models.Model):
-	performer = models.ForeignKey(User, on_delete=CASCADE)
-	task = models.ForeignKey(Task, on_delete=CASCADE)
-	date_begin = models.DateTimeField()
-	date_end = models.DateTimeField()
-	change_text = models.CharField(max_length=80)
-
 
 @receiver(pre_delete, sender=File)
 def delete_file(sender, instance, **kwargs):

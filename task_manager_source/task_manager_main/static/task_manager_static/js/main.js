@@ -7,35 +7,12 @@ const fileThumbnailsSrc = {
 	"text": "static/task_manager_static/img/text_icon.svg",
 }
 
-async function getCurrentUserProfile() {
-	axios.get("auths_get").then(function(response) {
-		mainTaskApp.user_profile = response.data.data;
-	}).catch(function (err) {
-		console.error(err);
-	})
-}
-
-async function getStatuses() {
-	axios.get("api/status/?format=json").then(function(response) {
-		mainTaskApp.selection_items = response.data.results
-	}).catch(function (err) {
-		console.error(err);
-	}) 
-}
-
-async function getAllUsersProfiles() {
-	axios.get("api/profile/?format=json").then(function(response) {
-		mainTaskApp.user_profiles = response.data.results;
-	}).catch(function (err) {
-		console.error(err);
-	})
-}
-
 const mainTaskApp = new Vue({
 	delimiters: ["[[", "]]"],
 	el: "#main_app_wrapper_",
 	data: {
 		user_profile: null, // Профиль текущего пользователя
+		user_id: -1,
 		user_profiles: [], // Профили всех пользователей
 
 		is_loading: false, // блокировка экрана (экран закрузки вкл/выкл)
@@ -48,7 +25,7 @@ const mainTaskApp = new Vue({
 		selection_items: [], // Список выбора статусов работы
 
 		manager_settings: { // Настройки работы mainTaskApp и его компонентов
-			functional_hotbar_items_max: 1, // Индекс последнего функционально элемента хотбара (не являющийся задачей)
+			functional_hotbar_items_max: 3, // Количество последних вкладок
 		},
 
 		tasks_list_component: {
@@ -58,16 +35,25 @@ const mainTaskApp = new Vue({
 		task_list: [
 		]	// Список вкладок
 	},
-	mounted() {
-		this.prepare_new_task();
+	async mounted() { // При загрузке страницы загрузить список задач
+		await this.prepare_new_task();
 		this.tasks_list_component = {
 			is: mainListTab("tab_all_shedule"),
 		};
+		console.log(this.user_profile);
+		this.tasks_list_current = {
+			is: userListTab("tab_current_user_shedule"),
+			user_id: this.user_id,
+		}
 		this.current_active_item = 0;
 		this.active_component = this.tasks_list_component;
 	},
 	methods: {
 		open_task_tab: function(task_id) {
+			this.current_active_item = this.create_task_tab(task_id);
+			this.active_component = this.build_component_props(true);
+		},
+		open_task_tab_edit_m: function(task_id) {
 			this.current_active_item = this.create_task_tab(task_id);
 			this.active_component = this.build_component_props();
 		},
@@ -76,17 +62,19 @@ const mainTaskApp = new Vue({
 			this.current_active_item = index;
 			if(index == 0) {
 				this.active_component = this.tasks_list_component;
+			} else if (index == 1) {
+				this.active_component = this.tasks_list_current;
 			}
-			else if(index == 1) {
+			else if(index == 2) {
 				this.current_active_item = this.create_task_tab();
 				this.active_component = this.build_component_props();
-			} else if(index > this.manager_settings.functional_hotbar_items_max) {
-				this.active_component = this.build_component_props();
+			} else if(index >= this.manager_settings.functional_hotbar_items_max) {
+				this.active_component = this.build_component_props(true);
 			}
 			this.is_loading = false;
 		},
 		create_task_tab: function(open_task_id) {
-			let new_tab_id = this.task_list.length + 2;
+			let new_tab_id = this.task_list.length + this.manager_settings.functional_hotbar_items_max;
 			let new_component;
 			if(open_task_id) {
 				new_component = new createTaskTab("tab_" + new_tab_id, open_task_id);
@@ -105,17 +93,21 @@ const mainTaskApp = new Vue({
 			return new_tab_id;
 		},
 		close_tab: function(tab_item) {
-			this.task_list.splice(this.task_list.indexOf(tab_item), 1);
-			this.current_active_item = null;
-			this.active_component = null;
+			let closed_tab = this.task_list.splice(this.task_list.indexOf(tab_item), 1);
+			if(closed_tab[0].tab_id == this.current_active_item) {
+				this.current_active_item = null;
+				this.active_component = null;
+			}
 		},
-		build_component_props: function() {
+		build_component_props: function(read_only) {
 			return {
 				is: "tab_" + this.current_active_item,
 				user_profiles: this.user_profiles,
 				user_profile: this.user_profile,
+				user_id: this.user_id,
 				selection_items: this.selection_items,
-				current_active_item: this.current_active_item
+				current_active_item: this.current_active_item,
+				read_only_enabled: read_only || false
 			}
 		},
 		
@@ -139,18 +131,26 @@ const mainTaskApp = new Vue({
 			this.show_logout = false;
 		},
 
+		get_api_data: async function(url) {
+			let response = await axios.get(url);
+			return response;
+		},
+
 		async prepare_new_task() {
 			this.is_loading = true;
 			if(!this.statuses_loaded) {
-				await getCurrentUserProfile()
-						.then(getStatuses())
-						.then(getAllUsersProfiles())
-						.finally(function() {
-							mainTaskApp.statuses_loaded = true;
-							mainTaskApp.is_loading = false;
+				let status_data = await this.get_api_data("api/status/?format=json");
+				this.selection_items = status_data.data.results;
 
-						});
-				
+				let user_data = await this.get_api_data("api/profile/?format=json"); 
+				this.user_profiles = user_data.data.results; 
+
+				let current_user_data = await this.get_api_data("auths_get"); 
+				this.user_profile = current_user_data.data.profile_name;
+				this.user_id = current_user_data.data.profile_id;
+
+				mainTaskApp.statuses_loaded = true;
+				mainTaskApp.is_loading = false;
 			}
 		}
 

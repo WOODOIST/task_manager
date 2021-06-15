@@ -3,14 +3,11 @@ from re import sub
 from task_manager_main.models import *
 from django.contrib.auth import authenticate, login, logout
 from pathlib import Path
-from django.contrib.auth.signals import user_logged_in
-from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.template import loader
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
-from pytz import timezone
+from django.http import HttpResponse
 
 import json
 
@@ -55,7 +52,8 @@ def try_to_authenticate(request):
 
 def get_current_user(request):
 	if request.user.is_authenticated:
-		return JsonResponse({'data':request.user.profile.__str__()})
+		profile = request.user.profile
+		return HttpResponse(status=200, content=json.dumps({'profile_name':profile.__str__(), 'profile_id': profile.id}))
 	else:
 		return HttpResponse(status=403)
 
@@ -73,23 +71,28 @@ def try_to_save_task(request):
 		if 'task' in request.POST:
 			request_task_data = json.loads(request.POST['task'])
 
+			# Проверка статуса 
 			try:
 				new_task_status = Status.objects.get(name=request_task_data['status']).id
 			except ObjectDoesNotExist as err:
 				return HttpResponse(status= 404, content=json.dumps({'message': 'Указанный статус не найден'}))
 
+			# Проверка наименования задачи
 			if type(request_task_data['title']) is str and request_task_data['title'].strip() != '':
 				new_task_title = request_task_data['title'].strip()
 			else:
 				return HttpResponse(status=422, content=json.dumps({'message': 'Введённые данные содержат пустые поля'}))
 
+			# Проверка указанного исполнителя
 			try:
-				new_task_assignee = User.objects.select_related().filter(pk=Profile.objects.get(pk=request_task_data['assignee']).id)[0]
+				profile_object = Profile.objects.get(pk=request_task_data['assignee'])
+				new_task_assignee = User.objects.select_related().filter(pk=profile_object.id)[0]
 			except ObjectDoesNotExist as err:
 				return HttpResponse(status= 404, content=json.dumps({'message': 'Указанный исполнитель не найден среди пользователей'}))
 			except KeyError as err:
 				return HttpResponse(status= 404, content=json.dumps({'message': 'Указанный исполнитель не найден среди пользователей'}))
 
+			# Проверка даты начала и окончания
 			try:
 				new_date_start = request_task_data['date_begin']
 				new_date_end = request_task_data['date_end']
@@ -101,21 +104,22 @@ def try_to_save_task(request):
 			except ValueError as err:
 				return HttpResponse(status = 422, content=json.dumps({'message': 'Был получен неверный формат даты'}))
 
+			# Проверка описания задачи
 			if request_task_data['description'].strip() != '':
 				new_task_description = request_task_data['description']
 			else:
 				new_task_description = None
 			
-			# this will get all files from request
+			# Данные файлов с формы
 			raw_file_data = request.FILES
-			# this will clear all '<server_loaded>' files
+			# Это уберёт все '<server_loaded>' файлы
 			server_loaded_files = request.POST['server_loaded_files'].split(',')
 			file_data = [x for x in raw_file_data.values()]
 			file_names = [sub(r'[\(\)]', '', sub(r'\s','_',x)) for x in raw_file_data.keys()]
-			# Creating db entry
 			final_files_data = file_data.copy()
 			final_files_name = file_names.copy()
 
+			# Создание записи в бд
 			if request_task_data['id'] != '':
 				try:
 					task_object = Task.objects.get(pk=request_task_data['id'])
@@ -125,7 +129,6 @@ def try_to_save_task(request):
 				work_dir_file_paths = working_dir.glob('**/*')
 				work_dir_files = [x.name for x in work_dir_file_paths]
 
-				print(file_names, server_loaded_files)
 				# compare files from request with task folder and overwrite existing
 				if working_dir.is_dir():
 					i = 0
@@ -138,7 +141,6 @@ def try_to_save_task(request):
 								work_dir_files.remove(work_dir_files[i])
 							else:
 								if work_dir_files[i] not in server_loaded_files:
-									print("s")
 									file_to_rewrite = File.objects.get(filename = work_dir_files[i], task=task_object)
 									file_to_rewrite.file = file_data[i]
 									Path.unlink(Path(str(working_dir) + os.sep + work_dir_files[i]))
@@ -147,13 +149,11 @@ def try_to_save_task(request):
 									final_files_name.remove(file_names[i])	
 								i += 1	
 						except ObjectDoesNotExist as err:
-							print(err)
 							return HttpResponse(status = 404, content=json.dumps({'message': 'Файл не найден'}))
 							
 			else:
 				task_object = Task()
 				task_object.author = request.user
-				task_object.commentary = request_task_data['commentary']
 
 			task_object.task_name = new_task_title
 			task_object.description = new_task_description
@@ -178,3 +178,19 @@ def try_to_save_task(request):
 			
 	else: 
 		return HttpResponse(status = 403, content=json.dumps({'message': 'Для сохранения записи необходимо авторизоваться'}))
+
+
+def try_to_delete_task(request):
+	if request.method == 'POST' and request.user.is_authenticated:
+		try:
+			task_id = json.loads(request.POST['task_id'])
+			task_to_delete = Task.objects.get(pk=task_id)
+
+			if task_to_delete.author.id != request.user.id:
+				return HttpResponse(status = 403, content=json.dumps({'message': 'Нет прав'}))
+			
+			task_to_delete.delete()
+			return HttpResponse(status = 200, content=json.dumps({'message': 'Запись успешно удалена'}))
+		except ObjectDoesNotExist as err:
+			return HttpResponse(status=404, content=json.dumps({'message': 'Задачи не существует'}))
+	return HttpResponse(status=500)

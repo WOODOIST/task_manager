@@ -22,9 +22,11 @@ class TaskViewSet(viewsets.ModelViewSet):
 	queryset = Task.objects.all().order_by('id')
 	filter_fields = {
 		'id':['exact'],
-		'task_name':['exact'],
-		'author__profile__second_name':['exact'],
-		'performer__profile__second_name':['exact'],
+		'task_name':['contains'],
+		'author__profile__id':['exact'],
+		'author__profile__second_name':['contains'],
+		'performer__profile__second_name':['contains'],
+		'performer__profile__id':['exact'],
 		'date_begin':['date__range'],
 		'status__name':['exact'],
 		'date_of_creation':['date__range'],

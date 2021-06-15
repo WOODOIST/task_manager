@@ -31,25 +31,9 @@ class TaskSerializer(serializers.ModelSerializer):
 		model = Task
 		fields = '__all__'
 
-
-class CommentSerializer(serializers.ModelSerializer):
-	task = TaskSerializer(read_only=False)
-	user = UserSerializer(read_only=False)
-
-	class Meta:
-		model = Comment
-		fields = '__all__'
-
 class FileSerializer(serializers.ModelSerializer):
 	task = TaskSerializer(read_only=False)
 
 	class Meta:
 		model = File
-		fields = ('id', 'task', 'filename')
-
-class TasksGraphSerializer(serializers.ModelSerializer):
-	task = TaskSerializer(read_only=False)
-
-	class Meta:
-		model = TasksGraph
-		fields = '__all__'
+		fields = ('id', 'task', 'filename', 'file')

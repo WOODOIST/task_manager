@@ -4,6 +4,7 @@
 	{% load static %}
 	<meta charset="UTF-8">
 	<title>Task manager</title>
+	<meta name="viewport" content="width=device-width, initial-scale=0.45, user-scalable=no"/>
 	<script src="{% static 'task_manager_static/js/utils.js' %}"></script>
 	<link rel="stylesheet" href="{% static 'task_manager_static/css/global.css' %}">
 	<script src="{% static 'task_manager_static/js/vue_develop.js' %}"></script>
@@ -14,6 +15,7 @@
 	{% else %}
 		<link rel="stylesheet" href="{% static 'task_manager_static/css/main.css' %}">
 		<link rel="stylesheet" href="{% static 'task_manager_static/css/data_list.css' %}">
+		<link rel="stylesheet" href="{% static 'task_manager_static/css/current_user.css' %}">
 	{% endif %}
 </head>
 <body>
@@ -38,7 +40,10 @@
 					<div :class="['hotbar-item', {'hotbar-active': current_active_item == 0}]" @click=select_tab(0)>
 						<span>Список всех задач</span> 
 					</div>	
-					<div :class="['hotbar-item', {'hotbar-active': current_active_item === 1}]" @click=select_tab(1)>
+					<div :class="['hotbar-item', {'hotbar-active': current_active_item == 1}]" @click=select_tab(1)>
+						<span>Мои задачи</span> 
+					</div>	
+					<div :class="['hotbar-item', {'hotbar-active': current_active_item === 2}]" @click=select_tab(2)>
 						<span>Создать задачу</span> 
 					</div>	
 					<div @click.middle="close_tab(item)" v-for="item in task_list" :class="['hotbar-item', 'task-hotbar-item', {'hotbar-active': current_active_item === item.tab_id}]" @click="select_tab(item.tab_id)">
@@ -50,7 +55,7 @@
 		</header>
 		<main class="app-main-authenticated">
 			<keep-alive>
-				<div v-cloak v-on:open_task_data="open_task_tab" v-bind=active_component></div>
+				<div v-cloak v-on:open_task_data="open_task_tab" v-on:open_task_edit="open_task_tab_edit_m" v-bind=active_component></div>
 			</keep-alive>
 		</main>
 

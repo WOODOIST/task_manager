@@ -14,9 +14,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Строит пути внутри проекта подобно: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# Устанавливает путь до файла с переменными окружения
 DOTENV_PATH = Path(BASE_DIR / ".env")
+# Загружает переменные окружения из файла
 load_dotenv(DOTENV_PATH)
 
 # Quick-start development settings - unsuitable for production
@@ -28,7 +30,7 @@ SECRET_KEY = 'django-insecure-en&z6e5cgds2v853=_#-9@$impiqb1^)_!ry#jj^bb^ss0hhtk
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.getenv("DEBUG"))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -83,9 +85,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
-
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -149,6 +148,8 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = BASE_DIR / 'static'
+
+MEDIA_URL = '/serve_files/'
 
 MEDIA_ROOT = os.getenv('STORAGE_PATH') 
 

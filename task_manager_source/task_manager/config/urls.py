@@ -7,4 +7,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("task_manager_main.urls")),
     path('api/', include('task_manager_main.api.urls'))
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

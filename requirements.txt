@@ -8,3 +8,17 @@ django-storages==1.11.1
 djangorestframework==3.12.4
 django-colorfield==0.4.1
 django-filter==2.4.0
+
+
+
+
+
+
+
+
+
+
+
+
+
+

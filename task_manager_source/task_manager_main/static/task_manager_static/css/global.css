@@ -98,6 +98,10 @@ body {
   flex-direction: column;
 }
 
+.read-only {
+  cursor: default !important;
+}
+
 @keyframes dotBricks {
   0% {
     box-shadow: 9991px -16px 0 0 #9880ff, 9991px 0 0 0 #9880ff, 10007px 0 0 0 #9880ff;
@@ -143,7 +147,22 @@ body {
 @keyframes fade_in {
   0% {
     opacity: 0;
+    transform: translateX(-15%);
   } 100% {
     opacity: 1;
+  }
+}
+
+@keyframes slide_left {
+  0% {
+    transform: translateX(-15%);
+    opacity: 0;
+  }
+}
+
+@keyframes slide_right {
+  0% {
+    transform: translateX(15%);
+    opacity: 0;
   }
 }
