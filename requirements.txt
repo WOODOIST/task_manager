@@ -1,0 +1,11 @@
+pip install flask
+
+pip install flask-requests
+
+pip install flask-session
+
+pip install -U Werkzeug
+
+pip install flask flask-cors
+
+pip install psycopg2-binary
